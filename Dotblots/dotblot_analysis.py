@@ -61,94 +61,100 @@ class Spot:
 
 for file in folder:
 
-	spots: list = []
+	if file[-3:] == "tif":
 
-	'''
-	# OPTIONAL: supplementary data for checking output
-	all_pointsx = []
-	all_pointsy = []
-	'''
+		spots: list = []
 
-	im = cv2.imread(directory+file, cv2.IMREAD_GRAYSCALE)
+		'''
+		# OPTIONAL: supplementary data for checking output
+		all_pointsx = []
+		all_pointsy = []
+		'''
 
-	max_brightness = np.max(im)
-	
-	if threshold != 0:
-		mask = np.where(im < threshold*max_brightness, 255-im, 0)
-	else:
-		mask = np.where(im < 0.8*max_brightness, 255-im, 0)
+		im = cv2.imread(directory+file, cv2.IMREAD_GRAYSCALE)
 
-	'''
-	# OPTIONAL: shows the thresholded image visually
-	plt.imshow(mask, origin="lower")
-	plt.show()
-	'''
+		max_brightness = np.max(im)
+		
+		if threshold != 0:
+			mask = np.where(im < threshold*max_brightness, 255-im, 0)
+		else:
+			mask = np.where(im < 0.8*max_brightness, 255-im, 0)
 
-	'''
-	# OPTIONAL: saves the thresholded image to the disk
-	cv2.imwrite(directory[:-1]+"_processed_files/processed_file_"+file, mask)
-	'''
+		'''
+		# OPTIONAL: shows the thresholded image visually
+		plt.imshow(mask, origin="lower")
+		plt.show()
+		'''
 
-	img_x_size: int = mask.shape[0]
-	img_y_size: int = mask.shape[1]
-	for y in range(img_x_size):
-		for x in range(img_y_size):
-			if mask[y][x] != 0:
-				pointsx: list[int] = []
-				pointsy: list[int] = []
-				points_intensites: list[int] = []
-				Boundary_Fill(x, y, mask, pointsx, pointsy, points_intensites)
+		'''
+		# OPTIONAL: saves the thresholded image to the disk
+		cv2.imwrite(directory[:-1]+"_processed_files/processed_file_"+file, mask)
+		'''
 
-				centerx: int = int((max(pointsx)+min(pointsx))/2 + 0.5)
-				centery: int = int((max(pointsy)+min(pointsy))/2 + 0.5)
-				total_intensity: int = np.sum(points_intensites)
-				standard_deviation: float = np.std(points_intensites)
-				
-				'''
-				# OPTIONAL: supplementary data for checking output
-				for x in pointsx:
-					all_pointsx.append(x)
-				for y in pointsy:
-					all_pointsy.append(y)
-				'''
+		img_x_size: int = mask.shape[0]
+		img_y_size: int = mask.shape[1]
+		for y in range(img_x_size):
+			for x in range(img_y_size):
+				if mask[y][x] != 0:
+					pointsx: list[int] = []
+					pointsy: list[int] = []
+					points_intensites: list[int] = []
+					Boundary_Fill(x, y, mask, pointsx, pointsy, points_intensites)
 
-				spots.append(Spot(centerx, centery, len(points_intensites), total_intensity, standard_deviation))
-	
-	'''
-	# OPTIONAL: shows all of the processed pixels as a scatter plot, to check woth the original image
-	# REQUIRES all_pointsx and all_pointsy
+					centerx: int = int((max(pointsx)+min(pointsx))/2 + 0.5)
+					centery: int = int((max(pointsy)+min(pointsy))/2 + 0.5)
+					total_intensity: int = np.sum(points_intensites)
+					standard_deviation: float = np.std(points_intensites)
+					
+					'''
+					# OPTIONAL: supplementary data for checking output
+					for x in pointsx:
+						all_pointsx.append(x)
+					for y in pointsy:
+						all_pointsy.append(y)
+					'''
 
-	fig, ax = plt.subplots()
-	plt.ylim(0,img_y_size)
-	plt.xlim(0,img_x_size)
-	plt.scatter(all_pointsx, all_pointsy)
-	plt.show()
-	'''
+					spots.append(Spot(centerx, centery, len(points_intensites), total_intensity, standard_deviation))
+		
+		'''
+		# OPTIONAL: shows all of the processed pixels as a scatter plot, to check woth the original image
+		# REQUIRES all_pointsx and all_pointsy
 
-	'''
-	# OPTIONAL: For plotting the center of the points, to double check output
-	# Also uncomment the final two commented lines (140 and 154)
-	fig, ax = plt.subplots()
-	plt.ylim(0,img_y_size)
-	plt.xlim(0,img_x_size)
-	'''
-	
-	out_data = {"spot": [], "center x": [], "center y": [], "size": [], "total signal intensity": [], "mean signal intensity": [], "stdev": []}
+		fig, ax = plt.subplots()
+		plt.title(file)
+		plt.ylim(0,img_y_size)
+		plt.xlim(0,img_x_size)
+		plt.scatter(all_pointsx, all_pointsy)
+		plt.show()
+		'''
 
-	i = 0
-	for spot in spots:
-		# plt.scatter(spot.centerx, spot.centery)
-		out_data["spot"].append(i)
-		out_data["center x"].append(spot.centerx)
-		out_data["center y"].append(spot.centery)
-		out_data["size"].append(spot.size)
-		out_data["total signal intensity"].append(spot.total_intensity)
-		out_data["mean signal intensity"].append(spot.mean_intensity)
-		out_data["stdev"].append(spot.error)
-		i += 1
+		'''
+		# OPTIONAL: For plotting the center of the points, to double check output
+		# Also uncomment the final two commented lines (140 and 154)
+		fig, ax = plt.subplots()
+		plt.title(file)
+		plt.ylim(0,img_y_size)
+		plt.xlim(0,img_x_size)
+		'''
+		
+		out_data = {"spot": [], "center x": [], "center y": [], "size": [], "total signal intensity": [], "mean signal intensity": [], "stdev": []}
 
-	dataframe = pd.DataFrame(out_data)
-	dataframe.to_csv(directory[:-1]+"_processed_files/statistics_"+ os.path.splitext(file)[0]+".csv", index=False)
-	print(dataframe)
+		i = 0
+		for spot in spots:
+			# plt.scatter(spot.centerx, spot.centery)
+			out_data["spot"].append(i)
+			out_data["center x"].append(spot.centerx)
+			out_data["center y"].append(spot.centery)
+			out_data["size"].append(spot.size)
+			out_data["total signal intensity"].append(spot.total_intensity)
+			out_data["mean signal intensity"].append(spot.mean_intensity)
+			out_data["stdev"].append(spot.error)
+			i += 1
 
-	#plt.show()
+		dataframe = pd.DataFrame(out_data)
+		dataframe.sort("center x", inplace=True)
+		dataframe.to_csv(directory[:-1]+"_processed_files/statistics_"+ os.path.splitext(file)[0]+".csv", index=False)
+		print(file)
+		print(dataframe)
+
+		#plt.show()
