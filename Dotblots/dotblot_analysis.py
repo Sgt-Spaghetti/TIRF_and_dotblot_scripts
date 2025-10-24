@@ -152,7 +152,7 @@ for file in folder:
 			i += 1
 
 		dataframe = pd.DataFrame(out_data)
-		dataframe.sort("center x", inplace=True)
+		dataframe.sort_values("center x", inplace=True)
 		dataframe.to_csv(directory[:-1]+"_processed_files/statistics_"+ os.path.splitext(file)[0]+".csv", index=False)
 		print(file)
 		print(dataframe)
